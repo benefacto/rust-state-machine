@@ -7,11 +7,13 @@ pub struct Runtime {
 }
 
 impl Runtime {
-	fn new(&self) -> Self {
+	fn new() -> Self {
 		Self { system: system::Pallet::new(), balances: balances::Pallet::new() }
 	}
 }
 
 fn main() {
-	println!("Hello, world!");
+	let mut runtime = Runtime::new();
+	runtime.balances.set_balance("alice".to_owned(), 100);
+	// TODO
 }
