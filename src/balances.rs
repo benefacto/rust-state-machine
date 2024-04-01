@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
-type AccountId = String;
+use crate::types::AccountId;
+
 type Balance = u128;
 
 #[derive(Debug)]

@@ -1,9 +1,14 @@
 use std::collections::BTreeMap;
 
+use crate::types::AccountId;
+
+type BlockNumber = u32;
+type Nonce = u32;
+
 #[derive(Debug)]
 pub struct Pallet {
-    block_number: u32,
-    nonce: BTreeMap<String, u32>,
+    block_number: BlockNumber,
+    nonce: BTreeMap<String, Nonce>,
 }
 
 impl Pallet {
@@ -11,7 +16,7 @@ impl Pallet {
         Self { block_number: 0, nonce: BTreeMap::new() }
     }
 
-    pub fn block_number(&self) -> u32 { 
+    pub fn block_number(&self) -> BlockNumber { 
         self.block_number
     }
 
@@ -22,11 +27,11 @@ impl Pallet {
         Ok(())
     }
 
-	pub fn nonce(&self, who: &str) -> u32 {
+	pub fn nonce(&self, who: &AccountId) -> Nonce {
 		*self.nonce.get(who).unwrap_or(&0)
     }
 
-    pub fn inc_nonce(&mut self, who: String) -> Result<(), String> {
+    pub fn inc_nonce(&mut self, who: AccountId) -> Result<(), String> {
         let current_nonce = *self.nonce.get(&who).unwrap_or(&0);
         let new_nonce = current_nonce.checked_add(1).ok_or_else(|| {
 			format!("Nonce {} for {} will overflow, upgrade necessary", current_nonce, who)
@@ -51,8 +56,10 @@ fn block_number() {
 #[test]
 fn nonce() {
     let mut system = Pallet::new();
-    let starting_nonce = system.nonce("alice");
-    system.inc_nonce("alice".to_owned()).unwrap();
-    let incremented_nonce_number = system.nonce("alice");
+	let alice : String= "alice".to_string();
+
+    let starting_nonce = system.nonce(&alice);
+    system.inc_nonce(alice.to_owned()).unwrap();
+    let incremented_nonce_number = system.nonce(&alice);
     assert_eq!(incremented_nonce_number, starting_nonce + 1);
 }
