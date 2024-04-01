@@ -1,8 +1,11 @@
 use std::collections::BTreeMap;
 
+type AccountId = String;
+type Balance = u128;
+
 #[derive(Debug)]
 pub struct Pallet {
-	balances: BTreeMap<String, u128>,
+	balances: BTreeMap<AccountId, Balance>,
 }
 
 impl Pallet {
@@ -10,15 +13,15 @@ impl Pallet {
 		Self { balances: BTreeMap::new() }
 	}
 
-	pub fn set_balance(&mut self, who: String, amount: u128) -> () {
+	pub fn set_balance(&mut self, who: AccountId, amount: Balance) -> () {
 		self.balances.insert(who, amount);
 	}
 
-	pub fn balance(&self, who: &str) -> u128 {
+	pub fn balance(&self, who: &AccountId) -> Balance {
 		*self.balances.get(who).unwrap_or(&0)
 	}
 
-	pub fn transfer(&mut self, caller: String, to: String, amount: u128) -> Result<(), String> {
+	pub fn transfer(&mut self, caller: AccountId, to: AccountId, amount: Balance) -> Result<(), String> {
 		let caller_balance = self.balance(&caller);
 		let to_balance = self.balance(&to);
 
@@ -39,37 +42,41 @@ impl Pallet {
 #[test]
 fn init_balances() {
 	let mut balances = Pallet::new();
+	let alice : String= "alice".to_string();
+	let bob : String= "bob".to_string();
 
-	assert_eq!(balances.balance("alice"), 0);
-	let _ = balances.set_balance("alice".to_owned(), 100);
-	assert_eq!(balances.balance("alice"), 100);
-	assert_eq!(balances.balance("bob"), 0);
+	assert_eq!(balances.balance(&alice), 0);
+	let _ = balances.set_balance(alice.clone(), 100);
+	assert_eq!(balances.balance(&alice), 100);
+	assert_eq!(balances.balance(&bob), 0);
 }
 
 #[test]
 fn transfer_balance() {
 	let mut balances = Pallet::new();
+	let alice : String= "alice".to_string();
+	let bob : String= "bob".to_string();
 
-	let initial_transfer_result = balances.transfer("alice".to_owned(), "bob".to_owned(), 100);
+	let initial_transfer_result = balances.transfer(alice.clone(), bob.clone(), 100);
 	assert!(
 		initial_transfer_result.is_err(),
 		"Expected Err from initial transfer due to insufficient funds, got: {:?}",
 		initial_transfer_result
 	);
 	balances.set_balance("alice".to_owned(), 100);
-	let transfer_result = balances.transfer("alice".to_owned(), "bob".to_owned(), 100);
+	let transfer_result = balances.transfer(alice.clone(), bob.clone(), 100);
 	assert!(
 		transfer_result.is_ok(),
 		"Expected OK from transfer after setting balance, got: {:?}",
 		transfer_result
 	);
-	let alice_balance = balances.balance("alice");
+	let alice_balance = balances.balance(&alice);
 	assert_eq!(
 		alice_balance, 0,
 		"Expected 'alice' balance to be 0 after transfer, found: {}",
 		alice_balance
 	);
-	let bob_balance = balances.balance("bob");
+	let bob_balance = balances.balance(&bob);
 	assert_eq!(
 		bob_balance, 100,
 		"Expected 'bob' balance to be 100 after receiving transfer, found: {}",
