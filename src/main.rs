@@ -1,6 +1,7 @@
 mod balances;
 mod system;
 
+#[derive(Debug)]
 pub struct Runtime {
 	system: system::Pallet,
 	balances: balances::Pallet,
