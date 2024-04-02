@@ -50,6 +50,10 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
+pub enum Call<T: Config> {
+	Transfer { to: T::AccountId, amount: T::Balance },
+}
+
 #[cfg(test)]
 mod test {
 	struct TestConfig;
