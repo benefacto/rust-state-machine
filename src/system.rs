@@ -1,19 +1,22 @@
 use std::collections::BTreeMap;
 
-use crate::types::AccountId;
+use num::{CheckedAdd, One, Zero};
 
-type BlockNumber = u32;
-type Nonce = u32;
 
 #[derive(Debug)]
-pub struct Pallet {
+pub struct Pallet<AccountId, BlockNumber, Nonce> {
     block_number: BlockNumber,
-    nonce: BTreeMap<String, Nonce>,
+    nonce: BTreeMap<AccountId, Nonce>,
 }
 
-impl Pallet {
+impl<AccountId, BlockNumber, Nonce> Pallet<AccountId, BlockNumber, Nonce>
+where
+	AccountId: Ord + std::fmt::Debug + std::fmt::Display,
+	BlockNumber: Zero + One + CheckedAdd + Copy + std::fmt::Debug + std::fmt::Display,
+    Nonce: Copy + Zero + One + std::fmt::Debug + CheckedAdd + std::fmt::Display,
+{
     pub fn new() -> Self {
-        Self { block_number: 0, nonce: BTreeMap::new() }
+        Self { block_number: Zero::zero(), nonce: BTreeMap::new() }
     }
 
     pub fn block_number(&self) -> BlockNumber { 
@@ -21,23 +24,23 @@ impl Pallet {
     }
 
     pub fn inc_block_number(&mut self) -> Result<(), String> {
-        self.block_number = self.block_number.checked_add(1).ok_or_else(|| {
+        self.block_number = self.block_number.checked_add(&One::one()).ok_or_else(|| {
             format!("Block number {} will overflow, upgrade necessary", self.block_number)
         })?;
         Ok(())
     }
 
 	pub fn nonce(&self, who: &AccountId) -> Nonce {
-		*self.nonce.get(who).unwrap_or(&0)
+		*self.nonce.get(who).unwrap_or( &Zero::zero())
     }
 
     pub fn inc_nonce(&mut self, who: AccountId) -> Result<(), String> {
-        let current_nonce = *self.nonce.get(&who).unwrap_or(&0);
-        let new_nonce = current_nonce.checked_add(1).ok_or_else(|| {
+        let current_nonce = *self.nonce.get(&who).unwrap_or(&Zero::zero());
+        let new_nonce = current_nonce.checked_add(&One::one()).ok_or_else(|| {
 			format!("Nonce {} for {} will overflow, upgrade necessary", current_nonce, who)
 		})?;
 
-        self.nonce.insert(who.to_string(), new_nonce);
+        self.nonce.insert(who, new_nonce);
 
         Ok(())
     }
@@ -45,21 +48,23 @@ impl Pallet {
 
 #[test]
 fn block_number() {
-    let mut system = Pallet::new();
+    let mut system = Pallet::<&'static str, u128, u128>::new();
     let starting_block_number = system.block_number();
     assert_eq!(starting_block_number, 0);
-    system.inc_block_number().unwrap();
+    let inc_block_number_result = system.inc_block_number();
+    assert!(inc_block_number_result.is_ok());
     let incremented_block_number = system.block_number();
     assert_eq!(incremented_block_number, starting_block_number + 1);
 }
 
 #[test]
 fn nonce() {
-    let mut system = Pallet::new();
-	let alice : String= "alice".to_string();
+    let mut system = Pallet::<&'static str, u128, u128>::new();
+	let alice : &'static str= "alice";
 
     let starting_nonce = system.nonce(&alice);
-    system.inc_nonce(alice.to_owned()).unwrap();
+    let inc_nonce_result = system.inc_nonce(alice);
+    assert!(inc_nonce_result.is_ok());
     let incremented_nonce_number = system.nonce(&alice);
     assert_eq!(incremented_nonce_number, starting_nonce + 1);
 }

@@ -1,4 +1,4 @@
-use types::{AccountId, Balance};
+use types::{AccountId, Balance, BlockNumber, Nonce};
 
 mod balances;
 mod system;
@@ -6,7 +6,7 @@ mod types;
 
 #[derive(Debug)]
 pub struct Runtime {
-	system: system::Pallet,
+	system: system::Pallet<AccountId, BlockNumber, Nonce>,
 	balances: balances::Pallet<AccountId, Balance>,
 }
 
