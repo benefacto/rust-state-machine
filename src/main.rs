@@ -41,12 +41,12 @@ impl Runtime {
 
 
 	fn execute_block(&mut self, block: types::Block) -> support::DispatchResult {
-		self.system.inc_block_number();
+		let _ = self.system.inc_block_number();
 		if block.header.block_number != self.system.block_number() {
 			return Err("block number does not match what is expected".to_string());
 		}
 		for (i, support::Extrinsic { caller, call }) in block.extrinsics.into_iter().enumerate() {
-			self.system.inc_nonce(caller);
+			let _ = self.system.inc_nonce(caller.clone());
 			let _res = self.dispatch(caller, call).map_err(|e| {
 				eprintln!(
 					"Extrinsic Error\n\tBlock Number: {}\n\tExtrinsic Number: {}\n\tError: {}",
