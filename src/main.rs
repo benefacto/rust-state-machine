@@ -1,3 +1,5 @@
+use types::{AccountId, Balance};
+
 mod balances;
 mod system;
 mod types;
@@ -5,7 +7,7 @@ mod types;
 #[derive(Debug)]
 pub struct Runtime {
 	system: system::Pallet,
-	balances: balances::Pallet,
+	balances: balances::Pallet<AccountId, Balance>,
 }
 
 impl Runtime {
@@ -35,4 +37,6 @@ fn main() {
 	assert!(inc_nonce_result.is_ok());
 	let transfer_result = runtime.balances.transfer(alice.to_owned(), "charlie".to_owned(), 30);
 	assert!(transfer_result.is_ok());
+
+	println!("{:#?}", runtime);
 }
