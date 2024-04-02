@@ -1,4 +1,5 @@
 mod balances;
+mod support;
 mod system;
 
 impl system::Config for Runtime {

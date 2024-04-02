@@ -29,7 +29,7 @@ impl<T: Config> Pallet<T> {
 		caller: T::AccountId,
 		to: T::AccountId,
 		amount: T::Balance,
-	) -> Result<(), String> {
+	) -> crate::support::DispatchResult {
 		let caller_balance = self.balance(&caller);
 		let to_balance = self.balance(&to);
 
